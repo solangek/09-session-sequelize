@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <p>This example stores in session a variable to signal user's first visit. If the variable
+    is found we know the user already visited the site, and if not we write in session the new variable.</p>
+    <% if (views == 1) { %>
+      <p>It's your first visit!</p>
+    <% } else { %>
+    <p>You visited this page <%= views %> times</p>
+    <% } %>
+  </body>
+</html>
