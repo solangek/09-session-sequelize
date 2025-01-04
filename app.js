@@ -1,79 +1,66 @@
-var createError = require('http-errors');
-// load modules
-var fs = require('fs')
-var path = require('path');
-var logger = require('morgan');
-var express = require('express');
-var session = require('express-session');
+// app.js
+const createError = require('http-errors');
+const fs = require('fs');
+const path = require('path');
+const logger = require('morgan');
+const express = require('express');
+const session = require('express-session');
+const Sequelize = require('sequelize');
+const SequelizeStore = require('connect-session-sequelize')(session.Store);
 
-// our router
-var indexRouter = require('./routes/index');
+const indexRouter = require('./routes/index');
 
-// express main object
-var app = express();
+const app = express();
 
-// view engine setup: add EJS folder
+// View engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-// logging example - log only error responses
-// see https://www.npmjs.com/package/morgan for full documentation
-// var accessLogStream = fs.createWriteStream(path.join(__dirname, 'http.log'), { flags: 'a' })
-// app.use(logger('combined', { stream: accessLogStream, skip: function (req, res) { return res.statusCode < 400 } }));
-
-// plug the logging middleware - look for output in standard output
+// Logging middleware
 app.use(logger('dev'));
 
-// enable parsing request data
+// Enable parsing request data
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-//static folder
+// Static folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// enable database session store
-var Sequelize = require('sequelize')
-var session = require('express-session');
-var SequelizeStore = require('connect-session-sequelize')(session.Store);
-
-var sequelize = new Sequelize({
-  "dialect": "sqlite",
-  "storage": "./session.sqlite"
-});
-
-
-var myStore = new SequelizeStore({
-  db: sequelize
-})
+// Enable database session store
+const sequelize = new Sequelize({
+    dialect: 'sqlite',
+    storage: './session.sqlite'
+} );
+const myStore = new SequelizeStore({
+    db: sequelize
+} );
 
 
-// enable sessions
+// Enable sessions
 app.use(session({
-  secret:"somesecretkey",
-  store:myStore,
-  resave: false, // Force save of session for each request
-  saveUninitialized: false, // Save a session that is new, but has not been modified
-  cookie: {maxAge: 10*60*1000 } // milliseconds!
+  secret: 'somesecretkey',
+  store: myStore, // default is memory store
+  resave: false, // don't save session if unmodified
+  saveUninitialized: false, // don't create session until something stored
+  cookie: { maxAge: 10 * 60 * 1000 } // milliseconds
 }));
 
+// Sync the session store
 myStore.sync();
 
-
-// our routing
+// Routing
 app.use('/', indexRouter);
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
+// Catch 404 and forward to error handler
+app.use((req, res, next) => {
   next(createError(404));
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
+// Error handler
+app.use((err, req, res, next) => {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
   res.status(err.status || 500);
   res.render('error');
 });

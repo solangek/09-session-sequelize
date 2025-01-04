@@ -1,9 +1,10 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 
-//Access the session as req.session to count visits
-router.get('/',function(req,
-                        res, next) {
+/**
+ * Access the session as req.session to count visits
+ */
+router.get('/',(req, res, next) => {
 
   if (req.session.views) {
     req.session.views++;
